@@ -6,13 +6,16 @@ import {
   FlaskConical,
   Boxes,
   DollarSign,
-  TrendingDown,
   ShoppingCart,
+  Building2,
+  Users,
   BarChart3,
   FileText,
   Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -20,22 +23,97 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
-const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "AI Insights", url: "/insights", icon: Sparkles },
-  { title: "Simulations", url: "/simulations", icon: FlaskConical },
-  { title: "Assortment", url: "/assortment", icon: Boxes },
-  { title: "Pricing", url: "/pricing", icon: DollarSign },
-  { title: "Markdown", url: "/markdown", icon: TrendingDown },
-  { title: "Buying & Inventory", url: "/buying", icon: ShoppingCart },
-  { title: "Benchmarking", url: "/benchmarking", icon: BarChart3 },
-  { title: "Reports & Exports", url: "/reports", icon: FileText },
+interface NavItem {
+  title: string;
+  url: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+interface NavGroup {
+  title: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    title: "",
+    items: [
+      { title: "Dashboard", url: "/", icon: LayoutDashboard },
+      { title: "AI Insights", url: "/insights", icon: Sparkles },
+    ],
+  },
+  {
+    title: "Category Management",
+    items: [
+      { title: "Assortment", url: "/assortment", icon: Boxes },
+      { title: "Pricing & Promotions", url: "/pricing", icon: Tag },
+      { title: "Buying & Inventory", url: "/buying", icon: ShoppingCart },
+      { title: "Supplier & Brand", url: "/supplier-brand", icon: Building2 },
+      { title: "Customer & Basket", url: "/customer-basket", icon: Users },
+    ],
+  },
+  {
+    title: "Planning & Analysis",
+    items: [
+      { title: "Simulations", url: "/simulations", icon: FlaskConical },
+      { title: "Benchmarking", url: "/benchmarking", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Reporting",
+    items: [
+      { title: "Reports & Exports", url: "/reports", icon: FileText },
+    ],
+  },
 ];
 
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [openGroups, setOpenGroups] = useState<string[]>(["Category Management", "Planning & Analysis", "Reporting"]);
   const location = useLocation();
+
+  const toggleGroup = (title: string) => {
+    setOpenGroups((prev) =>
+      prev.includes(title) ? prev.filter((g) => g !== title) : [...prev, title]
+    );
+  };
+
+  const renderNavItem = (item: NavItem) => {
+    const isActive = location.pathname === item.url;
+    const linkContent = (
+      <NavLink
+        to={item.url}
+        className={cn(
+          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+          isActive
+            ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-glow"
+            : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+        )}
+      >
+        <item.icon className="w-5 h-5 flex-shrink-0" />
+        {!collapsed && <span>{item.title}</span>}
+      </NavLink>
+    );
+
+    if (collapsed) {
+      return (
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
+          <TooltipContent side="right" className="font-medium">
+            {item.title}
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return linkContent;
+  };
 
   return (
     <aside
@@ -63,65 +141,73 @@ export function AppSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 py-4 overflow-y-auto">
-        <ul className="space-y-1 px-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.url;
-            const linkContent = (
-              <NavLink
-                to={item.url}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-glow"
-                    : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-                )}
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                {!collapsed && <span>{item.title}</span>}
-              </NavLink>
-            );
-
-            if (collapsed) {
-              return (
-                <li key={item.title}>
-                  <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-                    <TooltipContent side="right" className="font-medium">
-                      {item.title}
-                    </TooltipContent>
-                  </Tooltip>
-                </li>
-              );
-            }
-
-            return <li key={item.title}>{linkContent}</li>;
-          })}
-        </ul>
+        <div className="space-y-4 px-2">
+          {navGroups.map((group, groupIdx) => (
+            <div key={groupIdx}>
+              {group.title && !collapsed ? (
+                <Collapsible
+                  open={openGroups.includes(group.title)}
+                  onOpenChange={() => toggleGroup(group.title)}
+                >
+                  <CollapsibleTrigger className="flex items-center justify-between w-full px-3 py-1.5 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider hover:text-sidebar-foreground/70">
+                    {group.title}
+                    <ChevronDown
+                      className={cn(
+                        "w-3 h-3 transition-transform",
+                        openGroups.includes(group.title) && "rotate-180"
+                      )}
+                    />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <ul className="space-y-1 mt-1">
+                      {group.items.map((item) => (
+                        <li key={item.title}>{renderNavItem(item)}</li>
+                      ))}
+                    </ul>
+                  </CollapsibleContent>
+                </Collapsible>
+              ) : (
+                <ul className="space-y-1">
+                  {group.items.map((item) => (
+                    <li key={item.title}>{renderNavItem(item)}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
       </nav>
 
       {/* Admin Link */}
       <div className="px-2 pb-2">
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <NavLink
-              to="/admin"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                location.pathname === "/admin"
-                  ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                  : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-              )}
-            >
-              <Settings className="w-5 h-5 flex-shrink-0" />
-              {!collapsed && <span>Admin</span>}
-            </NavLink>
-          </TooltipTrigger>
-          {collapsed && (
-            <TooltipContent side="right" className="font-medium">
-              Admin
-            </TooltipContent>
+        <div className={cn(!collapsed && "border-t border-sidebar-border pt-2 mb-2")}>
+          {!collapsed && (
+            <p className="px-3 py-1.5 text-xs font-semibold text-sidebar-foreground/50 uppercase tracking-wider">
+              Admin Center
+            </p>
           )}
-        </Tooltip>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <NavLink
+                to="/admin"
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  location.pathname === "/admin"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                    : "text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                )}
+              >
+                <Settings className="w-5 h-5 flex-shrink-0" />
+                {!collapsed && <span>Admin</span>}
+              </NavLink>
+            </TooltipTrigger>
+            {collapsed && (
+              <TooltipContent side="right" className="font-medium">
+                Admin
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </div>
       </div>
 
       {/* Collapse Toggle */}

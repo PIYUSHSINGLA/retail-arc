@@ -10,8 +10,9 @@ import NewSimulation from "./pages/NewSimulation";
 import SimulationDetail from "./pages/SimulationDetail";
 import Assortment from "./pages/Assortment";
 import Pricing from "./pages/Pricing";
-import Markdown from "./pages/Markdown";
 import Buying from "./pages/Buying";
+import SupplierBrand from "./pages/SupplierBrand";
+import CustomerBasket from "./pages/CustomerBasket";
 import Benchmarking from "./pages/Benchmarking";
 import Reports from "./pages/Reports";
 import Admin from "./pages/Admin";
@@ -33,8 +34,9 @@ const App = () => (
           <Route path="/simulations/:id" element={<SimulationDetail />} />
           <Route path="/assortment" element={<Assortment />} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/markdown" element={<Markdown />} />
           <Route path="/buying" element={<Buying />} />
+          <Route path="/supplier-brand" element={<SupplierBrand />} />
+          <Route path="/customer-basket" element={<CustomerBasket />} />
           <Route path="/benchmarking" element={<Benchmarking />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/admin" element={<Admin />} />
