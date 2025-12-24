@@ -6,8 +6,8 @@ import {
   CheckCircle2,
   ChevronRight,
   RefreshCw,
-  Info,
   Clock,
+  BarChart3,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,11 @@ const insights = {
       description: "67% demand retention if ED-015 dropped",
       confidence: "medium",
     },
+  ],
+  benchmarking: [
+    "Category outperforming market by +3.2%",
+    "Price index 98.5 vs competition (competitive)",
+    "Promo intensity aligned with category average",
   ],
   goingWell: [
     "Energy Drinks category exceeding forecast by 8.2%",
@@ -171,6 +176,26 @@ export function AIInsightsPanel() {
             </AccordionContent>
           </AccordionItem>
 
+          {/* Benchmarking */}
+          <AccordionItem value="benchmarking" className="border rounded-lg px-3">
+            <AccordionTrigger className="text-sm font-medium py-2 hover:no-underline">
+              <span className="flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-info" />
+                Benchmarking
+              </span>
+            </AccordionTrigger>
+            <AccordionContent className="pt-0 pb-3">
+              <ul className="space-y-2">
+                {insights.benchmarking.map((item, idx) => (
+                  <li key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-info mt-2 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+
           {/* What's Going Well */}
           <AccordionItem value="well" className="border rounded-lg px-3">
             <AccordionTrigger className="text-sm font-medium py-2 hover:no-underline">
@@ -241,11 +266,6 @@ export function AIInsightsPanel() {
             </AccordionContent>
           </AccordionItem>
         </Accordion>
-
-        <Button variant="outline" size="sm" className="w-full text-xs">
-          <Info className="w-3 h-3 mr-1" />
-          Explain Insights
-        </Button>
       </CardContent>
     </Card>
   );
