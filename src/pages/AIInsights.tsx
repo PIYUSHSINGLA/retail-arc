@@ -1,8 +1,18 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Collapsible,
   CollapsibleContent,
@@ -18,11 +28,12 @@ import {
   ChevronDown,
   ChevronRight,
   Play,
-  Settings,
-  Layers,
   AlertTriangle,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface InsightCard {
   id: string;
@@ -121,6 +132,17 @@ const demandSignals: InsightCard[] = [
     actions: ["Review flavored water positioning", "Consider youth-targeted variants"],
     explainability: { metrics: ["Under-25 freq -5%", "Switching to energy +12%"], benchmarks: ["vs 25-35 stable"], analogues: ["Similar shift 2023"] },
   },
+  {
+    id: "d3",
+    headline: "Weekend demand spike in convenience format",
+    whatsHappening: "35% higher velocity on 500ml bottles during weekend periods",
+    whyHappening: "On-the-go consumption patterns align with leisure activities",
+    impact: "£15K opportunity",
+    impactType: "opportunity",
+    timeHorizon: "short-term",
+    actions: ["Adjust weekend stock allocations", "Review convenience format pricing"],
+    explainability: { metrics: ["Weekend velocity +35%", "500ml share +8%"], benchmarks: ["vs weekday baseline"], analogues: ["Summer 2024 pattern"] },
+  },
 ];
 
 const inventoryRisks: InsightCard[] = [
@@ -145,6 +167,17 @@ const inventoryRisks: InsightCard[] = [
     timeHorizon: "immediate",
     actions: ["Place emergency order", "Adjust forecast model"],
     explainability: { metrics: ["Cover 1.8 wks", "Promo uplift +25%"], benchmarks: ["Safety 3 wks"], analogues: ["Dec 2023 shortage"] },
+  },
+  {
+    id: "i3",
+    headline: "Seasonal water range approaching shelf-life limit",
+    whatsHappening: "Limited edition summer water SKUs with 4 weeks to expiry",
+    whyHappening: "Lower than expected demand due to unseasonably cool weather",
+    impact: "£8K wastage risk",
+    impactType: "risk",
+    timeHorizon: "immediate",
+    actions: ["Initiate markdown schedule", "Consider bundle promotions"],
+    explainability: { metrics: ["Shelf-life 4 wks", "Current velocity 0.3x"], benchmarks: ["vs normal 1.0x"], analogues: ["Summer 2023 clearance"] },
   },
 ];
 
@@ -198,12 +231,18 @@ const benchmarks: InsightCard[] = [
   },
 ];
 
-function InsightCardComponent({ insight }: { insight: InsightCard }) {
+function InsightCardComponent({ 
+  insight, 
+  onRunSimulation 
+}: { 
+  insight: InsightCard;
+  onRunSimulation: (insight: InsightCard) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
 
   return (
     <Card className={cn(
-      "shadow-card border-l-4 transition-all",
+      "shadow-card border-l-4 transition-all hover:shadow-md",
       insight.impactType === "opportunity" ? "border-l-success" : "border-l-destructive"
     )}>
       <CardContent className="p-4">
@@ -242,17 +281,9 @@ function InsightCardComponent({ insight }: { insight: InsightCard }) {
             ))}
           </ul>
           <div className="flex gap-2">
-            <Button size="sm" className="text-xs h-7">
+            <Button size="sm" className="text-xs h-7" onClick={() => onRunSimulation(insight)}>
               <Play className="w-3 h-3 mr-1" />
               Run Simulation
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs h-7">
-              <Settings className="w-3 h-3 mr-1" />
-              Edit Assumptions
-            </Button>
-            <Button variant="ghost" size="sm" className="text-xs h-7">
-              <Layers className="w-3 h-3 mr-1" />
-              Combine
             </Button>
           </div>
         </div>
@@ -292,32 +323,121 @@ function InsightCardComponent({ insight }: { insight: InsightCard }) {
   );
 }
 
-function InsightSection({ title, icon: Icon, insights, iconColor }: { 
-  title: string; 
-  icon: React.ComponentType<{ className?: string }>; 
+function InsightsList({ 
+  insights, 
+  onRunSimulation 
+}: { 
   insights: InsightCard[];
-  iconColor: string;
+  onRunSimulation: (insight: InsightCard) => void;
 }) {
   return (
-    <section className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Icon className={cn("w-5 h-5", iconColor)} />
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <Badge variant="secondary" className="text-xs">{insights.length}</Badge>
+    <div className="grid gap-4">
+      {insights.map((insight) => (
+        <InsightCardComponent 
+          key={insight.id} 
+          insight={insight} 
+          onRunSimulation={onRunSimulation}
+        />
+      ))}
+    </div>
+  );
+}
+
+function OverviewTab({ onRunSimulation }: { onRunSimulation: (insight: InsightCard) => void }) {
+  const allRisks = [...priorityInsights, ...demandSignals, ...inventoryRisks, ...competitorIntel, ...benchmarks]
+    .filter(i => i.impactType === "risk")
+    .slice(0, 5);
+  
+  const allOpportunities = [...priorityInsights, ...demandSignals, ...inventoryRisks, ...competitorIntel, ...benchmarks]
+    .filter(i => i.impactType === "opportunity")
+    .slice(0, 5);
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle className="w-4 h-4 text-destructive" />
+            <span className="text-sm text-muted-foreground">Total Risks</span>
+          </div>
+          <p className="text-2xl font-bold">8</p>
+          <p className="text-xs text-muted-foreground">£145K exposure</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-4 h-4 text-success" />
+            <span className="text-sm text-muted-foreground">Opportunities</span>
+          </div>
+          <p className="text-2xl font-bold">5</p>
+          <p className="text-xs text-muted-foreground">£222K upside</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className="w-4 h-4 text-warning" />
+            <span className="text-sm text-muted-foreground">Immediate</span>
+          </div>
+          <p className="text-2xl font-bold">5</p>
+          <p className="text-xs text-muted-foreground">Action required</p>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle className="w-4 h-4 text-info" />
+            <span className="text-sm text-muted-foreground">Resolved</span>
+          </div>
+          <p className="text-2xl font-bold">12</p>
+          <p className="text-xs text-muted-foreground">This week</p>
+        </Card>
       </div>
-      <div className="grid gap-4">
-        {insights.map((insight) => (
-          <InsightCardComponent key={insight.id} insight={insight} />
-        ))}
+
+      {/* Priority Insights */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold">Priority Insights</h2>
+          <Badge variant="secondary" className="text-xs">{priorityInsights.length}</Badge>
+        </div>
+        <InsightsList insights={priorityInsights} onRunSimulation={onRunSimulation} />
       </div>
-    </section>
+    </div>
   );
 }
 
 const AIInsights = () => {
+  const navigate = useNavigate();
+  const [simulationModalOpen, setSimulationModalOpen] = useState(false);
+  const [selectedInsight, setSelectedInsight] = useState<InsightCard | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+
+  const handleRunSimulation = (insight: InsightCard) => {
+    setSelectedInsight(insight);
+    setSimulationModalOpen(true);
+  };
+
+  const handleStartSimulation = () => {
+    setIsRunning(true);
+    // Simulate background process
+    setTimeout(() => {
+      setIsRunning(false);
+      setSimulationModalOpen(false);
+      toast.success("Simulation started successfully", {
+        description: "You'll be notified when results are ready.",
+        action: {
+          label: "View Simulations",
+          onClick: () => navigate("/simulations"),
+        },
+      });
+    }, 2000);
+  };
+
+  const handleGoToSimulations = () => {
+    setSimulationModalOpen(false);
+    navigate("/simulations/new");
+  };
+
   return (
     <MainLayout>
-      <div className="space-y-8 animate-fade-in">
+      <div className="space-y-6 animate-fade-in">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -332,46 +452,146 @@ const AIInsights = () => {
           </div>
         </div>
 
-        {/* Priority Insights */}
-        <InsightSection 
-          title="Priority Insights" 
-          icon={Sparkles} 
-          insights={priorityInsights}
-          iconColor="text-primary"
-        />
+        {/* Tabbed Content */}
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full max-w-2xl grid-cols-5 h-10">
+            <TabsTrigger value="overview" className="text-xs">
+              <Sparkles className="w-3 h-3 mr-1" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="demand" className="text-xs">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              Demand
+            </TabsTrigger>
+            <TabsTrigger value="inventory" className="text-xs">
+              <Package className="w-3 h-3 mr-1" />
+              Inventory
+            </TabsTrigger>
+            <TabsTrigger value="competitor" className="text-xs">
+              <Target className="w-3 h-3 mr-1" />
+              Competitor
+            </TabsTrigger>
+            <TabsTrigger value="benchmarks" className="text-xs">
+              <BarChart3 className="w-3 h-3 mr-1" />
+              Benchmarks
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Demand Signals */}
-        <InsightSection 
-          title="Demand Signals" 
-          icon={TrendingUp} 
-          insights={demandSignals}
-          iconColor="text-success"
-        />
+          <TabsContent value="overview">
+            <OverviewTab onRunSimulation={handleRunSimulation} />
+          </TabsContent>
 
-        {/* Inventory Risks */}
-        <InsightSection 
-          title="Inventory Risks" 
-          icon={Package} 
-          insights={inventoryRisks}
-          iconColor="text-warning"
-        />
+          <TabsContent value="demand">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-5 h-5 text-success" />
+                <h2 className="text-lg font-semibold">Demand Signals</h2>
+                <Badge variant="secondary" className="text-xs">{demandSignals.length}</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                AI-detected changes in customer demand patterns and emerging trends.
+              </p>
+              <InsightsList insights={demandSignals} onRunSimulation={handleRunSimulation} />
+            </div>
+          </TabsContent>
 
-        {/* Competitor Intelligence */}
-        <InsightSection 
-          title="Competitor Intelligence" 
-          icon={Target} 
-          insights={competitorIntel}
-          iconColor="text-info"
-        />
+          <TabsContent value="inventory">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Package className="w-5 h-5 text-warning" />
+                <h2 className="text-lg font-semibold">Inventory Risks</h2>
+                <Badge variant="secondary" className="text-xs">{inventoryRisks.length}</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Stock availability concerns and inventory efficiency opportunities.
+              </p>
+              <InsightsList insights={inventoryRisks} onRunSimulation={handleRunSimulation} />
+            </div>
+          </TabsContent>
 
-        {/* Benchmarks & Performance Gaps */}
-        <InsightSection 
-          title="Benchmarks & Performance Gaps" 
-          icon={BarChart3} 
-          insights={benchmarks}
-          iconColor="text-secondary"
-        />
+          <TabsContent value="competitor">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-5 h-5 text-info" />
+                <h2 className="text-lg font-semibold">Competitor Intelligence</h2>
+                <Badge variant="secondary" className="text-xs">{competitorIntel.length}</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Competitive moves and market positioning updates.
+              </p>
+              <InsightsList insights={competitorIntel} onRunSimulation={handleRunSimulation} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="benchmarks">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 className="w-5 h-5 text-secondary" />
+                <h2 className="text-lg font-semibold">Benchmarks & Performance Gaps</h2>
+                <Badge variant="secondary" className="text-xs">{benchmarks.length}</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Category performance against internal and external benchmarks.
+              </p>
+              <InsightsList insights={benchmarks} onRunSimulation={handleRunSimulation} />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
+
+      {/* Run Simulation Modal */}
+      <Dialog open={simulationModalOpen} onOpenChange={setSimulationModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Run Simulation</DialogTitle>
+            <DialogDescription>
+              Choose how you'd like to proceed with the simulation for this insight.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedInsight && (
+            <div className="py-4">
+              <div className="p-3 rounded-lg bg-muted/50 mb-4">
+                <p className="text-sm font-medium">{selectedInsight.headline}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Estimated impact: <span className={selectedInsight.impactType === "opportunity" ? "text-success" : "text-destructive"}>{selectedInsight.impact}</span>
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-medium">Recommended actions to simulate:</p>
+                <ul className="space-y-1">
+                  {selectedInsight.actions.map((action, idx) => (
+                    <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
+                      <ChevronRight className="w-3 h-3" />
+                      {action}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-2 sm:gap-2">
+            <Button variant="outline" onClick={handleGoToSimulations}>
+              Create Custom Simulation
+            </Button>
+            <Button onClick={handleStartSimulation} disabled={isRunning}>
+              {isRunning ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Starting...
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 mr-2" />
+                  Quick Run
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MainLayout>
   );
 };
