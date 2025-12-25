@@ -175,14 +175,14 @@ const timeFrames = [
 
 export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
   const [filters, setFilters] = useState<FilterState>({
-    category: "beverages",
-    subcategory: "energy-drinks",
-    brand: "all",
-    geography: "uk",
-    region: "london",
-    zone: "all",
-    city: "all",
-    inventoryState: "all",
+    category: "",
+    subcategory: "",
+    brand: "",
+    geography: "",
+    region: "",
+    zone: "",
+    city: "",
+    inventoryState: "",
     timeFrame: "mtd",
     dateRange: { from: undefined, to: undefined },
   });
@@ -244,6 +244,38 @@ export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
   const currentZones = filters.region ? zones[filters.region] || [] : [];
   const currentCities = filters.zone && filters.zone !== "all" ? cities[filters.zone] || [] : [];
 
+  const FilterSelect = ({ 
+    label, 
+    value, 
+    onValueChange, 
+    options, 
+    placeholder, 
+    disabled = false,
+    width = "w-[120px]"
+  }: { 
+    label: string;
+    value: string; 
+    onValueChange: (v: string) => void; 
+    options: { value: string; label: string }[];
+    placeholder: string;
+    disabled?: boolean;
+    width?: string;
+  }) => (
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+      <SelectTrigger className={`h-8 ${width} text-xs`}>
+        <SelectValue placeholder={placeholder} />
+      </SelectTrigger>
+      <SelectContent>
+        <div className="px-2 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide border-b mb-1">
+          {label}
+        </div>
+        {options.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
   return (
     <div className="flex flex-wrap items-center justify-end gap-2">
       <div className="flex items-center gap-1 text-muted-foreground mr-2">
@@ -252,130 +284,99 @@ export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
       </div>
 
       {/* Category */}
-      <Select value={filters.category} onValueChange={(v) => updateFilter("category", v)}>
-        <SelectTrigger className="h-8 w-[110px] text-xs">
-          <SelectValue placeholder="Category" />
-        </SelectTrigger>
-        <SelectContent>
-          {categories.map((cat) => (
-            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <FilterSelect
+        label="Category"
+        value={filters.category}
+        onValueChange={(v) => updateFilter("category", v)}
+        options={categories}
+        placeholder="Category"
+        width="w-[110px]"
+      />
 
       {/* Subcategory */}
-      <Select 
-        value={filters.subcategory} 
+      <FilterSelect
+        label="Subcategory"
+        value={filters.subcategory}
         onValueChange={(v) => updateFilter("subcategory", v)}
+        options={currentSubcategories}
+        placeholder="Subcategory"
         disabled={!filters.category}
-      >
-        <SelectTrigger className="h-8 w-[130px] text-xs">
-          <SelectValue placeholder="Subcategory" />
-        </SelectTrigger>
-        <SelectContent>
-          {currentSubcategories.map((sub) => (
-            <SelectItem key={sub.value} value={sub.value}>{sub.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        width="w-[130px]"
+      />
 
       {/* Brand */}
-      <Select value={filters.brand} onValueChange={(v) => updateFilter("brand", v)}>
-        <SelectTrigger className="h-8 w-[110px] text-xs">
-          <SelectValue placeholder="Brand" />
-        </SelectTrigger>
-        <SelectContent>
-          {currentBrands.map((brand) => (
-            <SelectItem key={brand.value} value={brand.value}>{brand.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <FilterSelect
+        label="Brand"
+        value={filters.brand}
+        onValueChange={(v) => updateFilter("brand", v)}
+        options={currentBrands}
+        placeholder="Brand"
+        disabled={!filters.subcategory}
+        width="w-[110px]"
+      />
 
       {/* Geography */}
-      <Select value={filters.geography} onValueChange={(v) => updateFilter("geography", v)}>
-        <SelectTrigger className="h-8 w-[120px] text-xs">
-          <SelectValue placeholder="Geography" />
-        </SelectTrigger>
-        <SelectContent>
-          {geographies.map((geo) => (
-            <SelectItem key={geo.value} value={geo.value}>{geo.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <FilterSelect
+        label="Geography"
+        value={filters.geography}
+        onValueChange={(v) => updateFilter("geography", v)}
+        options={geographies}
+        placeholder="Geography"
+        width="w-[120px]"
+      />
 
       {/* Region */}
-      <Select 
-        value={filters.region} 
+      <FilterSelect
+        label="Region"
+        value={filters.region}
         onValueChange={(v) => updateFilter("region", v)}
+        options={currentRegions}
+        placeholder="Region"
         disabled={!filters.geography}
-      >
-        <SelectTrigger className="h-8 w-[100px] text-xs">
-          <SelectValue placeholder="Region" />
-        </SelectTrigger>
-        <SelectContent>
-          {currentRegions.map((reg) => (
-            <SelectItem key={reg.value} value={reg.value}>{reg.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        width="w-[100px]"
+      />
 
       {/* Zone */}
-      <Select 
-        value={filters.zone} 
+      <FilterSelect
+        label="Zone"
+        value={filters.zone}
         onValueChange={(v) => updateFilter("zone", v)}
+        options={[{ value: "all", label: "All Zones" }, ...currentZones]}
+        placeholder="Zone"
         disabled={!filters.region}
-      >
-        <SelectTrigger className="h-8 w-[120px] text-xs">
-          <SelectValue placeholder="Zone" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Zones</SelectItem>
-          {currentZones.map((zone) => (
-            <SelectItem key={zone.value} value={zone.value}>{zone.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        width="w-[120px]"
+      />
 
       {/* City */}
-      <Select 
-        value={filters.city} 
+      <FilterSelect
+        label="City"
+        value={filters.city}
         onValueChange={(v) => updateFilter("city", v)}
+        options={[{ value: "all", label: "All Cities" }, ...currentCities]}
+        placeholder="City"
         disabled={currentCities.length === 0}
-      >
-        <SelectTrigger className="h-8 w-[100px] text-xs">
-          <SelectValue placeholder="City" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Cities</SelectItem>
-          {currentCities.map((city) => (
-            <SelectItem key={city.value} value={city.value}>{city.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        width="w-[100px]"
+      />
 
       {/* Inventory State */}
-      <Select value={filters.inventoryState} onValueChange={(v) => updateFilter("inventoryState", v)}>
-        <SelectTrigger className="h-8 w-[130px] text-xs">
-          <SelectValue placeholder="Inventory" />
-        </SelectTrigger>
-        <SelectContent>
-          {inventoryStates.map((state) => (
-            <SelectItem key={state.value} value={state.value}>{state.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <FilterSelect
+        label="Inventory State"
+        value={filters.inventoryState}
+        onValueChange={(v) => updateFilter("inventoryState", v)}
+        options={inventoryStates}
+        placeholder="Inventory"
+        width="w-[130px]"
+      />
 
       {/* Time Frame */}
-      <Select value={filters.timeFrame} onValueChange={(v) => updateFilter("timeFrame", v)}>
-        <SelectTrigger className="h-8 w-[130px] text-xs">
-          <SelectValue placeholder="Time Frame" />
-        </SelectTrigger>
-        <SelectContent>
-          {timeFrames.map((tf) => (
-            <SelectItem key={tf.value} value={tf.value}>{tf.label}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <FilterSelect
+        label="Time Frame"
+        value={filters.timeFrame}
+        onValueChange={(v) => updateFilter("timeFrame", v)}
+        options={timeFrames}
+        placeholder="Time Frame"
+        width="w-[130px]"
+      />
 
       {/* Date Range */}
       <Popover open={dateOpen} onOpenChange={setDateOpen}>
@@ -396,6 +397,9 @@ export function DashboardFilters({ onFilterChange }: DashboardFiltersProps) {
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
+          <div className="px-3 py-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide border-b">
+            Date Range
+          </div>
           <CalendarComponent
             mode="range"
             selected={{ from: filters.dateRange.from, to: filters.dateRange.to }}

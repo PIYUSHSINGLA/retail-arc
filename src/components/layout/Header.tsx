@@ -22,19 +22,21 @@ import {
 const profiles = [
   {
     id: "piyush",
-    name: "Piyush",
+    name: "Piyush Sharma",
     role: "Category Manager",
-    initials: "PM",
-    email: "piyush@company.com",
+    initials: "PS",
+    email: "piyush.sharma@company.com",
     color: "bg-primary",
+    avatar: null,
   },
   {
     id: "manish",
-    name: "Manish",
+    name: "Manish Patel",
     role: "CxO",
-    initials: "MK",
-    email: "manish@company.com",
+    initials: "MP",
+    email: "manish.patel@company.com",
     color: "bg-secondary",
+    avatar: null,
   },
 ];
 
