@@ -31,6 +31,7 @@ import {
   AlertTriangle,
   CheckCircle,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -435,6 +436,20 @@ const AIInsights = () => {
     navigate("/simulations/new");
   };
 
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefreshInsights = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      setLastRefresh(new Date());
+      setIsRefreshing(false);
+      toast.success("Insights refreshed", {
+        description: "All insights have been updated with latest data.",
+      });
+    }, 1500);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-6 animate-fade-in">
@@ -446,9 +461,29 @@ const AIInsights = () => {
               Your daily intelligence briefing for category management decisions
             </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="w-4 h-4" />
-            Generated: 24 Dec 2025, 09:02 GMT
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="w-4 h-4" />
+              Generated: {lastRefresh.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}, {lastRefresh.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} GMT
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefreshInsights}
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh Insights
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
