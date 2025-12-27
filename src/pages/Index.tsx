@@ -10,7 +10,7 @@ import { TopDriversPanel } from "@/components/dashboard/TopDriversPanel";
 import { DataTable } from "@/components/dashboard/DataTable";
 import { AIInsightsPanel } from "@/components/dashboard/AIInsightsPanel";
 import { DashboardFilters, FilterState } from "@/components/filters/DashboardFilters";
-import { FloatingChatAssistant } from "@/components/dashboard/FloatingChatAssistant";
+
 
 const getKpis = (filters: FilterState) => {
   // Simulate different values based on filters
@@ -140,9 +140,6 @@ const Index = () => {
           </div>
         </div>
       </div>
-
-      {/* Floating Chat Assistant */}
-      <FloatingChatAssistant />
     </MainLayout>
   );
 };
