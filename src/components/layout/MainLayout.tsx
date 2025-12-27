@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { Header } from "./Header";
+import { FloatingChatAssistant } from "@/components/dashboard/FloatingChatAssistant";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -16,6 +17,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           {children}
         </main>
       </div>
+      {/* Global Floating Chat Assistant */}
+      <FloatingChatAssistant />
     </div>
   );
 }

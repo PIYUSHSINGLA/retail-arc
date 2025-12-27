@@ -90,11 +90,11 @@ export function FloatingChatAssistant() {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all z-50"
-        size="icon"
+        className="fixed bottom-6 right-6 h-auto py-3 px-4 rounded-full shadow-lg hover:shadow-xl transition-all z-50 gap-2"
       >
-        <MessageCircle className="w-6 h-6" />
-        <span className="absolute -top-1 -right-1 w-4 h-4 bg-success rounded-full animate-pulse" />
+        <Sparkles className="w-5 h-5" />
+        <span className="font-medium">SmartAdvisor</span>
+        <span className="absolute -top-1 -right-1 w-3 h-3 bg-success rounded-full animate-pulse" />
       </Button>
     );
   }
