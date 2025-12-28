@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Plus,
   TrendingUp,
@@ -23,6 +25,8 @@ import {
   Grid3X3,
   Layers,
   ArrowUpRight,
+  Download,
+  Loader2,
 } from "lucide-react";
 import {
   ScatterChart,
@@ -39,6 +43,10 @@ import {
   Treemap,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { SimulationPushModal } from "@/components/dashboard/SimulationPushModal";
+import { ScenarioModal } from "@/components/dashboard/ScenarioModal";
+import { StorePlanningExportModal } from "@/components/dashboard/StorePlanningExportModal";
+import { toast } from "sonner";
 
 // SKU Productivity Data
 const skuProductivityData = [
@@ -105,6 +113,17 @@ const Assortment = () => {
   const [simulationType, setSimulationType] = useState("");
   const [planogramModal, setPlanogramModal] = useState(false);
   const [uploadModal, setUploadModal] = useState(false);
+  const [scenarioModal, setScenarioModal] = useState(false);
+  const [pushModal, setPushModal] = useState(false);
+  const [exportModal, setExportModal] = useState(false);
+  const [isCreatingPlanogram, setIsCreatingPlanogram] = useState(false);
+  const [planogramProgress, setPlanogramProgress] = useState(0);
+  const [planogramComplete, setPlanogramComplete] = useState(false);
+  const [planogramForm, setPlanogramForm] = useState({
+    name: "",
+    template: "Standard Gondola (4 bays)",
+    cluster: "All Stores",
+  });
 
   const openSimulation = (type: string) => {
     setSimulationType(type);
@@ -119,6 +138,31 @@ const Assortment = () => {
       case "delist": return "hsl(var(--destructive))";
       default: return "hsl(var(--muted))";
     }
+  };
+
+  const handleCreatePlanogram = async () => {
+    if (!planogramForm.name) {
+      toast.error("Please enter a planogram name");
+      return;
+    }
+    setIsCreatingPlanogram(true);
+    setPlanogramProgress(0);
+    for (let i = 0; i <= 100; i += 25) {
+      await new Promise((r) => setTimeout(r, 400));
+      setPlanogramProgress(i);
+    }
+    setIsCreatingPlanogram(false);
+    setPlanogramComplete(true);
+    toast.success("Planogram created successfully");
+  };
+
+  const resetPlanogramModal = () => {
+    setPlanogramModal(false);
+    setTimeout(() => {
+      setPlanogramForm({ name: "", template: "Standard Gondola (4 bays)", cluster: "All Stores" });
+      setPlanogramProgress(0);
+      setPlanogramComplete(false);
+    }, 300);
   };
 
   return (
@@ -140,7 +184,7 @@ const Assortment = () => {
               <LayoutGrid className="w-4 h-4 mr-2" />
               Create Planogram
             </Button>
-            <Button>
+            <Button onClick={() => setScenarioModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
               New Assortment Scenario
             </Button>
@@ -706,15 +750,36 @@ const Assortment = () => {
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <Button variant="outline">
-                <ArrowUpRight className="w-4 h-4 mr-2" />
-                Export to Space Planning Tool
-              </Button>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setPlanogramModal(false)}>Cancel</Button>
-                <Button>Create Planogram</Button>
+                <Button variant="outline" onClick={() => setPushModal(true)}>
+                  <ArrowUpRight className="w-4 h-4 mr-2" />
+                  Push to Systems
+                </Button>
+                <Button variant="outline" onClick={() => setExportModal(true)}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export to Space Planning
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={resetPlanogramModal}>Cancel</Button>
+                <Button onClick={handleCreatePlanogram} disabled={isCreatingPlanogram}>
+                  {isCreatingPlanogram ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {planogramComplete ? "Done" : "Create Planogram"}
+                </Button>
               </div>
             </div>
+            {isCreatingPlanogram && (
+              <div className="space-y-2">
+                <Progress value={planogramProgress} />
+                <p className="text-sm text-muted-foreground text-center">Creating planogram...</p>
+              </div>
+            )}
+            {planogramComplete && (
+              <div className="text-center py-4">
+                <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-2" />
+                <p className="font-medium">Planogram Created!</p>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -744,6 +809,28 @@ const Assortment = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Scenario Modal */}
+      <ScenarioModal
+        open={scenarioModal}
+        onOpenChange={setScenarioModal}
+        type="assortment"
+      />
+
+      {/* Push Modal */}
+      <SimulationPushModal
+        open={pushModal}
+        onOpenChange={setPushModal}
+        simulationName="Assortment Scenario"
+        simulationType="Assortment"
+      />
+
+      {/* Export Modal */}
+      <StorePlanningExportModal
+        open={exportModal}
+        onOpenChange={setExportModal}
+        planogramName={planogramForm.name || "New Planogram"}
+      />
     </MainLayout>
   );
 };
