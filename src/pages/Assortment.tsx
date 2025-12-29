@@ -722,14 +722,6 @@ const Assortment = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-6 py-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Planogram Name</label>
-              <Input 
-                placeholder="Enter planogram name" 
-                value={planogramForm.name}
-                onChange={(e) => setPlanogramForm(prev => ({ ...prev, name: e.target.value }))}
-              />
-            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Template</label>
