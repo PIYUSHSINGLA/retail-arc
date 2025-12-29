@@ -21,6 +21,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Truck,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import {
   LineChart,
@@ -37,6 +39,9 @@ import {
   Area,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { ScenarioModal } from "@/components/dashboard/ScenarioModal";
+import { SimulationPushModal } from "@/components/dashboard/SimulationPushModal";
+import { toast } from "sonner";
 
 // Forecast vs Actual Data
 const forecastActualData = [
@@ -91,10 +96,40 @@ const Buying = () => {
   const [simulationModal, setSimulationModal] = useState(false);
   const [simulationType, setSimulationType] = useState("");
   const [uploadModal, setUploadModal] = useState(false);
+  const [scenarioModal, setScenarioModal] = useState(false);
+  const [pushModal, setPushModal] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [simulationComplete, setSimulationComplete] = useState(false);
+  const [simulationProgress, setSimulationProgress] = useState(0);
 
   const openSimulation = (type: string) => {
     setSimulationType(type);
     setSimulationModal(true);
+    setSimulationComplete(false);
+    setSimulationProgress(0);
+    const interval = setInterval(() => {
+      setSimulationProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setSimulationComplete(true);
+          return 100;
+        }
+        return prev + 20;
+      });
+    }, 500);
+  };
+
+  const handleUpload = async () => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    for (let i = 0; i <= 100; i += 25) {
+      await new Promise(r => setTimeout(r, 300));
+      setUploadProgress(i);
+    }
+    setIsUploading(false);
+    setUploadModal(false);
+    toast.success("Forecast data uploaded successfully");
   };
 
   return (
@@ -112,7 +147,7 @@ const Buying = () => {
               <Upload className="w-4 h-4 mr-2" />
               Upload Forecast
             </Button>
-            <Button>
+            <Button onClick={() => setScenarioModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
               New Buy Plan
             </Button>
@@ -560,13 +595,15 @@ const Buying = () => {
           <div className="space-y-6 py-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span>Optimizing quantities...</span>
-                <span className="text-muted-foreground">55%</span>
+                <span>{simulationComplete ? "Complete!" : "Optimizing quantities..."}</span>
+                <span className="text-muted-foreground">{simulationProgress}%</span>
               </div>
-              <Progress value={55} />
+              <Progress value={simulationProgress} />
             </div>
             <div className="bg-muted rounded-lg p-4 space-y-3">
-              <h4 className="font-medium text-sm">Preliminary Results:</h4>
+              <h4 className="font-medium text-sm">
+                {simulationComplete ? "Final Results:" : "Preliminary Results:"}
+              </h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Stock Reduction</p>
@@ -586,10 +623,29 @@ const Buying = () => {
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setSimulationModal(false)}>Cancel</Button>
-              <Button>View Full Results</Button>
-            </div>
+            {simulationComplete && (
+              <div className="flex gap-2 justify-between">
+                <Button variant="outline" onClick={() => setPushModal(true)}>
+                  <ArrowUpRight className="w-4 h-4 mr-2" />
+                  Push to Systems
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setSimulationModal(false)}>Close</Button>
+                  <Button onClick={() => {
+                    toast.success("Buy plan approved and saved");
+                    setSimulationModal(false);
+                  }}>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Approve Plan
+                  </Button>
+                </div>
+              </div>
+            )}
+            {!simulationComplete && (
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setSimulationModal(false)}>Cancel</Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -608,21 +664,21 @@ const Buying = () => {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="h-24 flex-col gap-2">
+              <Button variant="outline" className="h-20 flex-col gap-2">
                 <BarChart3 className="w-6 h-6" />
-                <span>Demand Forecast</span>
+                <span className="text-xs">Demand Forecast</span>
               </Button>
-              <Button variant="outline" className="h-24 flex-col gap-2">
+              <Button variant="outline" className="h-20 flex-col gap-2">
                 <ShoppingCart className="w-6 h-6" />
-                <span>Buy Plan</span>
+                <span className="text-xs">Buy Plan</span>
               </Button>
-              <Button variant="outline" className="h-24 flex-col gap-2">
+              <Button variant="outline" className="h-20 flex-col gap-2">
                 <Truck className="w-6 h-6" />
-                <span>Supplier Data</span>
+                <span className="text-xs">Supplier Data</span>
               </Button>
-              <Button variant="outline" className="h-24 flex-col gap-2">
+              <Button variant="outline" className="h-20 flex-col gap-2">
                 <Package className="w-6 h-6" />
-                <span>Stock Snapshot</span>
+                <span className="text-xs">Stock Snapshot</span>
               </Button>
             </div>
             <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
@@ -630,13 +686,40 @@ const Buying = () => {
               <p className="text-sm font-medium">Drop files here or click to browse</p>
               <p className="text-xs text-muted-foreground mt-1">Supports CSV, Excel, JSON</p>
             </div>
+            {isUploading && (
+              <div className="space-y-2">
+                <Progress value={uploadProgress} />
+                <p className="text-sm text-muted-foreground text-center">Uploading...</p>
+              </div>
+            )}
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setUploadModal(false)}>Cancel</Button>
-              <Button>Upload</Button>
+              <Button onClick={handleUpload} disabled={isUploading}>
+                {isUploading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Upload
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Scenario Modal */}
+      <ScenarioModal
+        open={scenarioModal}
+        onOpenChange={setScenarioModal}
+        type="buying"
+        onComplete={() => {
+          toast.success("Buy plan created successfully");
+          setScenarioModal(false);
+        }}
+      />
+
+      {/* Push Modal */}
+      <SimulationPushModal
+        open={pushModal}
+        onOpenChange={setPushModal}
+        simulationName={simulationType || "Buy Plan"}
+      />
     </MainLayout>
   );
 };

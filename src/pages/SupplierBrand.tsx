@@ -26,6 +26,8 @@ import {
   Percent,
   FileText,
   BarChart3,
+  Upload,
+  Plus,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -44,6 +46,8 @@ import {
   Line,
   ReferenceLine,
 } from "recharts";
+import { ContractUploadModal } from "@/components/dashboard/ContractUploadModal";
+import { toast } from "sonner";
 
 // Mock data
 const supplierData = [
@@ -119,6 +123,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 
 const SupplierBrand = () => {
   const [selectedTab, setSelectedTab] = useState("suppliers");
+  const [contractUploadModal, setContractUploadModal] = useState(false);
 
   return (
     <MainLayout>
@@ -469,8 +474,12 @@ const SupplierBrand = () => {
             </div>
 
             <Card className="shadow-card">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-base">Contract Management</CardTitle>
+                <Button onClick={() => setContractUploadModal(true)}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  Upload Contract
+                </Button>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -516,6 +525,11 @@ const SupplierBrand = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ContractUploadModal
+        open={contractUploadModal}
+        onOpenChange={setContractUploadModal}
+      />
     </MainLayout>
   );
 };
