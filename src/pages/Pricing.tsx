@@ -7,6 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   DollarSign,
   TrendingUp,
@@ -21,6 +23,8 @@ import {
   Upload,
   BarChart3,
   Clock,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 import {
   BarChart,
@@ -37,6 +41,9 @@ import {
   Area,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { ScenarioModal } from "@/components/dashboard/ScenarioModal";
+import { SimulationPushModal } from "@/components/dashboard/SimulationPushModal";
+import { toast } from "sonner";
 
 // Price Index Data
 const priceIndexData = [
@@ -90,10 +97,41 @@ const Pricing = () => {
   const [simulationModal, setSimulationModal] = useState(false);
   const [simulationType, setSimulationType] = useState("");
   const [uploadModal, setUploadModal] = useState(false);
+  const [scenarioModal, setScenarioModal] = useState(false);
+  const [pushModal, setPushModal] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [simulationComplete, setSimulationComplete] = useState(false);
+  const [simulationProgress, setSimulationProgress] = useState(0);
 
   const openSimulation = (type: string) => {
     setSimulationType(type);
     setSimulationModal(true);
+    setSimulationComplete(false);
+    setSimulationProgress(0);
+    // Simulate progress
+    const interval = setInterval(() => {
+      setSimulationProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setSimulationComplete(true);
+          return 100;
+        }
+        return prev + 20;
+      });
+    }, 500);
+  };
+
+  const handleUpload = async () => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    for (let i = 0; i <= 100; i += 25) {
+      await new Promise(r => setTimeout(r, 300));
+      setUploadProgress(i);
+    }
+    setIsUploading(false);
+    setUploadModal(false);
+    toast.success("Pricing data uploaded successfully");
   };
 
   return (
@@ -111,7 +149,7 @@ const Pricing = () => {
               <Upload className="w-4 h-4 mr-2" />
               Upload Prices
             </Button>
-            <Button>
+            <Button onClick={() => setScenarioModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
               New Pricing Scenario
             </Button>
@@ -498,13 +536,15 @@ const Pricing = () => {
           <div className="space-y-6 py-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span>Calculating impact...</span>
-                <span className="text-muted-foreground">62%</span>
+                <span>{simulationComplete ? "Complete!" : "Calculating impact..."}</span>
+                <span className="text-muted-foreground">{simulationProgress}%</span>
               </div>
-              <Progress value={62} />
+              <Progress value={simulationProgress} />
             </div>
             <div className="bg-muted rounded-lg p-4 space-y-3">
-              <h4 className="font-medium text-sm">Preliminary Results:</h4>
+              <h4 className="font-medium text-sm">
+                {simulationComplete ? "Final Results:" : "Preliminary Results:"}
+              </h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Revenue Impact</p>
@@ -524,10 +564,29 @@ const Pricing = () => {
                 </div>
               </div>
             </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setSimulationModal(false)}>Cancel</Button>
-              <Button>View Full Results</Button>
-            </div>
+            {simulationComplete && (
+              <div className="flex gap-2 justify-between">
+                <Button variant="outline" onClick={() => setPushModal(true)}>
+                  <ArrowUpRight className="w-4 h-4 mr-2" />
+                  Push to Systems
+                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setSimulationModal(false)}>Close</Button>
+                  <Button onClick={() => {
+                    toast.success("Scenario approved and saved");
+                    setSimulationModal(false);
+                  }}>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Approve Scenario
+                  </Button>
+                </div>
+              </div>
+            )}
+            {!simulationComplete && (
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => setSimulationModal(false)}>Cancel</Button>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -545,18 +604,63 @@ const Pricing = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-              <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-3" />
-              <p className="font-medium">Drop files here or click to browse</p>
-              <p className="text-sm text-muted-foreground mt-1">Supports CSV, Excel, JSON</p>
+            <div className="grid grid-cols-2 gap-4">
+              <Button variant="outline" className="h-20 flex-col gap-2">
+                <DollarSign className="w-6 h-6" />
+                <span className="text-xs">Competitor Prices</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col gap-2">
+                <Tag className="w-6 h-6" />
+                <span className="text-xs">Promo Calendar</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col gap-2">
+                <Percent className="w-6 h-6" />
+                <span className="text-xs">Markdown Schedule</span>
+              </Button>
+              <Button variant="outline" className="h-20 flex-col gap-2">
+                <BarChart3 className="w-6 h-6" />
+                <span className="text-xs">Price Elasticity</span>
+              </Button>
             </div>
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+              <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm font-medium">Drop files here or click to browse</p>
+              <p className="text-xs text-muted-foreground mt-1">Supports CSV, Excel, JSON</p>
+            </div>
+            {isUploading && (
+              <div className="space-y-2">
+                <Progress value={uploadProgress} />
+                <p className="text-sm text-muted-foreground text-center">Uploading...</p>
+              </div>
+            )}
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setUploadModal(false)}>Cancel</Button>
-              <Button>Upload</Button>
+              <Button onClick={handleUpload} disabled={isUploading}>
+                {isUploading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Upload
+              </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Scenario Modal */}
+      <ScenarioModal
+        open={scenarioModal}
+        onOpenChange={setScenarioModal}
+        type="pricing"
+        onComplete={() => {
+          toast.success("Pricing scenario created successfully");
+          setScenarioModal(false);
+        }}
+      />
+
+      {/* Push Modal */}
+      <SimulationPushModal
+        open={pushModal}
+        onOpenChange={setPushModal}
+        simulationName={simulationType || "Pricing Scenario"}
+      />
     </MainLayout>
   );
 };

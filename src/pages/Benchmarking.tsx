@@ -20,6 +20,7 @@ import {
   Truck,
   Percent,
   DollarSign,
+  Loader2,
 } from "lucide-react";
 import {
   BarChart,
@@ -37,6 +38,8 @@ import {
   PolarRadiusAxis,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { InsightResultsModal } from "@/components/dashboard/InsightResultsModal";
+import { toast } from "sonner";
 
 // Category vs Market Index
 const categoryMarketData = [
@@ -91,6 +94,7 @@ const benchmarkInsights = [
     description: "You are over-investing in promo vs peers by 12%. Consider rebalancing to improve ROI.",
     impact: "-£18K margin",
     action: "Simulate promo reduction",
+    insightType: "promo-reduction" as const,
   },
   {
     type: "success",
@@ -98,6 +102,7 @@ const benchmarkInsights = [
     description: "Sales growth outperforming market by 8pp. Maintain current strategy in high-performing categories.",
     impact: "+£45K incremental",
     action: "Identify growth drivers",
+    insightType: "growth-drivers" as const,
   },
   {
     type: "info",
@@ -105,6 +110,7 @@ const benchmarkInsights = [
     description: "Range depth 5% below market. Consider adding 8-10 SKUs in Sports Drinks to match peers.",
     impact: "+£22K potential",
     action: "Simulate range expansion",
+    insightType: "range-expansion" as const,
   },
 ];
 
@@ -112,10 +118,31 @@ const Benchmarking = () => {
   const [simulationModal, setSimulationModal] = useState(false);
   const [simulationType, setSimulationType] = useState("");
   const [uploadModal, setUploadModal] = useState(false);
+  const [insightResultsModal, setInsightResultsModal] = useState(false);
+  const [selectedInsight, setSelectedInsight] = useState<typeof benchmarkInsights[0] | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const openSimulation = (type: string) => {
     setSimulationType(type);
     setSimulationModal(true);
+  };
+
+  const handleInsightAction = (insight: typeof benchmarkInsights[0]) => {
+    setSelectedInsight(insight);
+    setInsightResultsModal(true);
+  };
+
+  const handleUpload = async () => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    for (let i = 0; i <= 100; i += 25) {
+      await new Promise(r => setTimeout(r, 300));
+      setUploadProgress(i);
+    }
+    setIsUploading(false);
+    setUploadModal(false);
+    toast.success("Comparison data uploaded successfully");
   };
 
   return (
@@ -230,7 +257,7 @@ const Benchmarking = () => {
                     )}>
                       {insight.impact}
                     </Badge>
-                    <Button variant="ghost" size="sm" onClick={() => openSimulation(insight.action)}>
+                    <Button variant="default" size="sm" onClick={() => handleInsightAction(insight)}>
                       {insight.action}
                     </Button>
                   </div>
