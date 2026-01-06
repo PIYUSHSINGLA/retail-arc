@@ -52,8 +52,8 @@ const navGroups: NavGroup[] = [
     title: "Category Management",
     items: [
       { title: "Assortment", url: "/assortment", icon: Boxes },
-      { title: "Pricing & Promotions", url: "/pricing", icon: Tag },
       { title: "Buying & Inventory", url: "/buying", icon: ShoppingCart },
+      { title: "Pricing & Promotions", url: "/pricing", icon: Tag },
       { title: "Supplier & Brand", url: "/supplier-brand", icon: Building2 },
       { title: "Customer & Basket", url: "/customer-basket", icon: Users },
     ],
