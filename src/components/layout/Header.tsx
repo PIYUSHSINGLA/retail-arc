@@ -26,7 +26,7 @@ const profiles = [
     name: "Piyush Singla",
     role: "Category Manager",
     initials: "PS",
-    email: "piyush.singla@company.com",
+    email: "piyush.b.singla@accenture.com",
     color: "bg-primary",
     avatar: null,
   },
@@ -35,7 +35,7 @@ const profiles = [
     name: "Manish Pasrija",
     role: "CxO",
     initials: "MP",
-    email: "manish.pasrija@company.com",
+    email: "m.pasrija@accenture.com",
     color: "bg-secondary",
     avatar: null,
   },
@@ -136,10 +136,8 @@ export function Header() {
                 <div className="flex-1">
                   <p className="text-sm font-medium">{profile.name}</p>
                   <p className="text-xs text-muted-foreground">{profile.email}</p>
+                  <p className="text-[10px] text-muted-foreground/70">{profile.role}</p>
                 </div>
-                <Badge variant="outline" className="text-[10px]">
-                  {profile.role}
-                </Badge>
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />

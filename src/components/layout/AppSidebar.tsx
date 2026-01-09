@@ -131,8 +131,8 @@ export function AppSidebar() {
               <Brain className="w-6 h-6 text-primary-foreground" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-base tracking-tight">
-                ai<span className="text-primary">.Retail</span>
+              <span className="font-bold text-base tracking-tight text-primary">
+                ai.Retail
               </span>
               <span className="text-[10px] text-sidebar-foreground/50 uppercase tracking-widest">
                 Category Intelligence
