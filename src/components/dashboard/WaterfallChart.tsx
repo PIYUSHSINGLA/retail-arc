@@ -25,33 +25,34 @@ export function WaterfallChart() {
       <CardHeader className="pb-2">
         <CardTitle className="text-base font-semibold flex items-center justify-between">
           Revenue Change Waterfall
-          <span className="text-sm font-normal text-success">+$100K Net Impact</span>
+          <span className="text-sm font-normal text-success">+£100K Net Impact</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="h-[280px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(270, 15%, 90%)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis
                 dataKey="name"
-                tick={{ fill: "hsl(263, 20%, 45%)", fontSize: 11 }}
-                axisLine={{ stroke: "hsl(270, 15%, 90%)" }}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
               />
               <YAxis
-                tick={{ fill: "hsl(263, 20%, 45%)", fontSize: 11 }}
-                axisLine={{ stroke: "hsl(270, 15%, 90%)" }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
+                tickFormatter={(value) => `£${(value / 1000).toFixed(0)}K`}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(0, 0%, 100%)",
-                  border: "1px solid hsl(270, 15%, 90%)",
+                  backgroundColor: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  color: "hsl(var(--card-foreground))",
                 }}
                 formatter={(value: number, name: string, props: any) => [
-                  `$${props.payload.displayValue.toLocaleString()}`,
+                  `£${props.payload.displayValue.toLocaleString()}`,
                   props.payload.name,
                 ]}
               />
@@ -60,7 +61,7 @@ export function WaterfallChart() {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Bar>
-              <ReferenceLine y={380000} stroke="hsl(263, 20%, 65%)" strokeDasharray="4 4" />
+              <ReferenceLine y={380000} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" />
             </BarChart>
           </ResponsiveContainer>
         </div>

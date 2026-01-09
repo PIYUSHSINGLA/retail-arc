@@ -176,7 +176,7 @@ export function DataTable() {
                       <p className="text-xs text-muted-foreground">{row.category}</p>
                     </div>
                   </td>
-                  <td className="p-3 text-right font-mono">${row.currentPrice.toFixed(2)}</td>
+                  <td className="p-3 text-right font-mono">£{row.currentPrice.toFixed(2)}</td>
                   <td className="p-3 text-right font-mono">{row.actualUnits.toLocaleString()}</td>
                   <td className={cn(
                     "p-3 text-right font-mono font-medium",
@@ -184,7 +184,7 @@ export function DataTable() {
                   )}>
                     {row.varianceUnits > 0 ? "+" : ""}{row.varianceUnits.toFixed(1)}%
                   </td>
-                  <td className="p-3 text-right font-mono">${row.actualRevenue.toLocaleString()}</td>
+                  <td className="p-3 text-right font-mono">£{row.actualRevenue.toLocaleString()}</td>
                   <td className="p-3 text-right font-mono">{row.margin.toFixed(1)}%</td>
                   <td className="p-3 text-right font-mono">{row.sellThrough.toFixed(1)}%</td>
                   <td className={cn(

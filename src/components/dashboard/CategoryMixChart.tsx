@@ -57,12 +57,13 @@ export function CategoryMixChart() {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(0, 0%, 100%)",
-                  border: "1px solid hsl(270, 15%, 90%)",
+                  backgroundColor: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  color: "hsl(var(--card-foreground))",
                 }}
-                formatter={(value: number) => [`$${value.toLocaleString()}`, "Revenue"]}
+                formatter={(value: number) => [`£${value.toLocaleString()}`, "Revenue"]}
               />
               <Legend
                 layout="vertical"

@@ -59,36 +59,37 @@ export function RevenueChart() {
                   <stop offset="95%" stopColor="hsl(260, 100%, 58%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(270, 15%, 90%)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis
                 dataKey="name"
-                tick={{ fill: "hsl(263, 20%, 45%)", fontSize: 11 }}
-                axisLine={{ stroke: "hsl(270, 15%, 90%)" }}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
               />
               <YAxis
                 yAxisId="revenue"
-                tick={{ fill: "hsl(263, 20%, 45%)", fontSize: 11 }}
-                axisLine={{ stroke: "hsl(270, 15%, 90%)" }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
+                tickFormatter={(value) => `£${(value / 1000).toFixed(0)}K`}
               />
               <YAxis
                 yAxisId="units"
                 orientation="right"
-                tick={{ fill: "hsl(263, 20%, 45%)", fontSize: 11 }}
-                axisLine={{ stroke: "hsl(270, 15%, 90%)" }}
+                tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
+                axisLine={{ stroke: "hsl(var(--border))" }}
                 tickFormatter={(value) => `${(value / 1000).toFixed(1)}K`}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(0, 0%, 100%)",
-                  border: "1px solid hsl(270, 15%, 90%)",
+                  backgroundColor: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
                   borderRadius: "8px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  color: "hsl(var(--card-foreground))",
                 }}
-                labelStyle={{ color: "hsl(263, 54%, 19%)", fontWeight: 600 }}
+                labelStyle={{ color: "hsl(var(--foreground))", fontWeight: 600 }}
                 formatter={(value: number, name: string) => [
                   name === "revenue" || name === "forecast"
-                    ? `$${value.toLocaleString()}`
+                    ? `£${value.toLocaleString()}`
                     : value.toLocaleString(),
                   name.charAt(0).toUpperCase() + name.slice(1),
                 ]}
@@ -107,7 +108,7 @@ export function RevenueChart() {
                 stroke="hsl(260, 100%, 58%)"
                 strokeWidth={2.5}
                 dot={{ fill: "hsl(260, 100%, 58%)", strokeWidth: 0, r: 3 }}
-                activeDot={{ r: 5, stroke: "hsl(260, 100%, 58%)", strokeWidth: 2, fill: "white" }}
+                activeDot={{ r: 5, stroke: "hsl(260, 100%, 58%)", strokeWidth: 2, fill: "hsl(var(--card))" }}
               />
               <Line
                 yAxisId="revenue"
