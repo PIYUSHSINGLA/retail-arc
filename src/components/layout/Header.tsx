@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Bell, HelpCircle, ChevronDown, User } from "lucide-react";
+import { Bell, HelpCircle, ChevronDown, User, Sun, Moon } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,23 +23,40 @@ import {
 const profiles = [
   {
     id: "piyush",
-    name: "Piyush Sharma",
+    name: "Piyush Singla",
     role: "Category Manager",
     initials: "PS",
-    email: "piyush.sharma@company.com",
+    email: "piyush.singla@company.com",
     color: "bg-primary",
     avatar: null,
   },
   {
     id: "manish",
-    name: "Manish Patel",
+    name: "Manish Pasrija",
     role: "CxO",
     initials: "MP",
-    email: "manish.patel@company.com",
+    email: "manish.pasrija@company.com",
     color: "bg-secondary",
     avatar: null,
   },
 ];
+
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="relative"
+    >
+      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Toggle theme</span>
+    </Button>
+  );
+}
 
 export function Header() {
   const [selectedProfile, setSelectedProfile] = useState(profiles[0]);
@@ -67,6 +85,9 @@ export function Header() {
 
       {/* Right: Actions & Profile Selector */}
       <div className="flex items-center gap-2">
+        {/* Theme Toggle */}
+        <ThemeToggle />
+        
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-4 h-4" />
           <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-destructive rounded-full" />
